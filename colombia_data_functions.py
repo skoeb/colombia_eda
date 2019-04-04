@@ -135,7 +135,7 @@ def data_grouper(df, level = 'Municipio', land_type = 'Total', func = 'sum'):
 
 #%%
 #READ IN GEOJSONS AND CLEAN UP
-muni_shape_in = gpd.read_file('/Users/skoebric/Dropbox/GitHub/colombia_eda/colombia-municipios-simplified.json', encoding = 'latin')
+muni_shape_in = gpd.read_file('colombia-municipios-simplified/colombia-municipios.shp', encoding = 'latin')
 muni_shape_in.rename({'NOMBRE_DPT':'Departamento','NOMBRE_MPI':'Municipio'}, axis = 'columns', inplace = True)
 muni_shape_in['Departamento'] = [remove_accents(i) for i in list(muni_shape_in['Departamento'])]
 muni_shape_in['Departamento'] = muni_shape_in['Departamento'].replace('SANTAFE DE BOGOTA D.C', 'BOGOTA')
@@ -144,7 +144,7 @@ muni_shape_in['Municipio'] = [remove_accents(i) for i in list(muni_shape_in['Mun
 muni_shape_in.crs = {'init':'epsg:4326'}
 
 #merging
-dept_shape_in = gpd.read_file('/Users/skoebric/Dropbox/GitHub/colombia_eda/colombia-departamento.json', encoding = 'latin')
+dept_shape_in = gpd.read_file('colombia-departamento-simplified.json', encoding = 'latin')
 dept_shape_in.rename({'NOMBRE_DPT':'Departamento','NOMBRE_MPI':'Municipio'}, axis = 'columns', inplace = True)
 dept_shape_in['Departamento'] = [remove_accents(i) for i in list(dept_shape_in['Departamento'])]
 dept_shape_in['Departamento'] = dept_shape_in['Departamento'].replace('SANTAFE DE BOGOTA D.C', 'BOGOTA')
@@ -203,6 +203,14 @@ def mapper(data_df, columns, columns_cmap = None, level = 'Municipio'):
         columns = ['Total Residencial','Industrial','Comercial']
         columns_cmap = ['Greens', 'Reds', 'Blues']
 
+    elif columns == 'estrata_columns_lim':
+        columns = ['Estrato 1','Estrato 4','Estrato 6']
+        columns_cmap = ['Greens'] * 3
+
+    elif columns == 'total_residencial':
+        columns = ['Total Residencial']
+        columns_cmap = ['Greens']
+
     if level == 'Municipio':
         data_gdf = muni_shape_merger(data_df)
     elif level == 'Departamento':
@@ -221,7 +229,7 @@ def mapper(data_df, columns, columns_cmap = None, level = 'Municipio'):
         if level == 'Municipio':
             local_gdf = data_gdf[[f'{c}',f'{c}_color','geometry','Departamento','Municipio']]
             local_gdf.columns = ['data','color','geometry', 'Departamento','Municipio'] #folium doesn't like when dfs in a loop have different column names
-        elif level == 'Departamento':
+        if level == 'Departamento':
             local_gdf = data_gdf[[f'{c}',f'{c}_color','geometry','Departamento']]
             local_gdf.columns = ['data','color','geometry', 'Departamento']
         local_gdfs.append(local_gdf)
@@ -248,16 +256,16 @@ def mapper(data_df, columns, columns_cmap = None, level = 'Municipio'):
 
             if level == 'Departamento':
                 popup_ = folium.Popup(
-                      f"<b>Departamento:</b> {row['Departamento']}<br>"
+                      f"<b>Dep:</b> {row['Departamento']}<br>"
                       f"<b>Data:</b> {int(row['data'])}<br>"
                       )
-            elif level == 'Municipio':
-                popup_ = folium.Popup(
-                      f"<b>Departamento:</b> {row['Departamento']}<br>"
-                      f"<b>Municipio:</b> {row['Municipio']}<br>"
-                      f"<b>Data:</b> {int(row['data'])}<br>"
-                      )
-            popup_.add_to(geojson_)
+#            elif level == 'Municipio':
+#                popup_ = folium.Popup(
+#                      f"<b>Dep:</b> {row['Departamento']}<br>"
+#                      f"<b>Muni:</b> {row['Municipio']}<br>"
+#                      f"<b>Data:</b> {int(row['data'])}<br>"
+#                      )
+                popup_.add_to(geojson_)
             geojson_.add_to(fg_)
 
         fgs.append(fg_)
