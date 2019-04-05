@@ -130,7 +130,10 @@ def data_grouper(df, level = 'Municipio', land_type = 'Total', func = 'sum'):
         df_out = df.groupby(['Departamento','Municipio'], as_index = False).agg(func)
     elif level == 'Departamento':
         df_out = df.groupby('Departamento', as_index = False).agg(func)
-
+    try:
+        df_out = df_out.drop(['Unnamed: 0','year'], axis = 'columns')
+    except KeyError:
+        df_out = df_out
     return df_out
 
 #%%
